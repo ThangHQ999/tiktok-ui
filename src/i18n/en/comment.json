@@ -1,0 +1,20 @@
+{
+  "post": "Post",
+  "addComment": "Add comment",
+  "addReply": "Add reply",
+  "comments": "Comments",
+  "reply": "Reply",
+  "see": "See",
+  "answers": "answers",
+  "seeMore": "See more",
+  "hide": "Hide",
+  "creator": "Creator",
+  "time": {
+    "minutes": "minutes",
+    "hour": "hour",
+    "day": "day",
+    "week": "week",
+    "month": "month",
+    "ago": "ago"
+  }
+}

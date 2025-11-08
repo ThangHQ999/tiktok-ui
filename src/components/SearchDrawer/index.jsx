@@ -20,8 +20,10 @@ import searchService from '../../services/search/search.service';
 import MorePopover from '../MorePopover/MorePopover';
 import { useDrawerStore } from '../../store/drawerStore';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 function SearchDrawer() {
+  const { t } = useTranslation('search');
   const currentUser = useSelector((state) => state.auth.currentUser);
   const { closeDrawer } = useDrawerStore();
   const navigate = useNavigate();
@@ -95,7 +97,7 @@ function SearchDrawer() {
           weight="bold"
           style={{ letterSpacing: '0.3px', color: 'inherit', fontSize: 20 }}
         >
-          Search
+          {t('search')}
         </Text>
       </div>
 
@@ -152,7 +154,7 @@ function SearchDrawer() {
               data-e2e="search-transfer-history-title"
               className={styles.DivHeader}
             >
-              Tìm kiếm gần đây
+              {t('recentSearches')}
             </div>
           )}
           {/* Mỗi <li> bên dưới nên render từ mảng data searchResult */}
@@ -275,7 +277,7 @@ function SearchDrawer() {
                 data-e2e="search-transfer-guess-search-title"
                 className={styles.DivHeader}
               >
-                You may like
+                {t('mayLike')}
               </div>
               {guessSearch.map((guess, idx) => (
                 <li
@@ -335,7 +337,7 @@ function SearchDrawer() {
               className={styles.LiItemContainerMore}
             >
               <p className={styles.PMoreText}>
-                View all results for “{search}”
+                {t('viewAllResult')}“{search}”
               </p>
             </li>
           )}

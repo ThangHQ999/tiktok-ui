@@ -104,7 +104,12 @@ function LoginEmailForm() {
           }}
           errors={errors}
         />
-        <Link className={styles['ALink-StyledLink']}>Bạn quên mật khẩu?</Link>
+        <Link
+          className={styles['ALink-StyledLink']}
+          onClick={() => dispatch(setComponent('resetPasswordByEmail'))}
+        >
+          Bạn quên mật khẩu?
+        </Link>
         <Button styledButton type="submit" disabled={!isFilled}>
           Đăng nhập
         </Button>

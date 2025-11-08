@@ -1,0 +1,30 @@
+{
+  "notification": "Notification",
+  "allActivity": "All activity",
+  "likes": {
+    "tab": "Likes",
+    "notify": "Likes on your videos",
+    "empty": "When someone likes one of your videos, you'll see it here"
+  },
+  "comments": {
+    "tab": "Comments",
+    "notify": "Comments on your videos",
+    "empty": "When someone comments on one of your videos, you'll see it here"
+  },
+  "mentionsAndTags": {
+    "tab": "Mentions and tags",
+    "notify": "Mentions of you",
+    "empty": "When someone mentions you, you'll see it here"
+  },
+  "follower": {
+    "tab": "Followers",
+    "notify": "Follows you",
+    "empty": "When someone follows you, you'll see it here",
+    "startFollow": "has started following you"
+  },
+  "new": "New",
+  "systemNotification": "System notification",
+  "accountUpdates": "Account updates",
+  "notificationContent": "We’ll update our Community Guidelines on September 13, 2025, so you can continue to create, explore, and share safely on TikTok. Check out what’s new and learn more.",
+  "previous": "Previous"
+}

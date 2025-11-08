@@ -1,0 +1,12 @@
+{
+  "message": "Message",
+  "following": "Following",
+  "likeCount": "Likes",
+  "reposts": "Reposts",
+  "liked": "Liked",
+  "latest": "Latest",
+  "popular": "Popular",
+  "oldest": "Oldest",
+  "playList": "Playlist",
+  "posts": "Posts"
+}

@@ -1,0 +1,15 @@
+{
+  "menuItem": {
+    "quality": {
+      "quality": "Quality",
+      "auto": "Auto"
+    },
+    "caption": "Captions",
+    "autoScroll": "Auto scroll",
+    "floatingPlayer": "Floating player",
+    "notInterested": "Not interested",
+    "report": "Report",
+    "ban": "Block",
+    "inappropriate": "Mark as inappropriate"
+  }
+}

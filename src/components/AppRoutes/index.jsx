@@ -32,7 +32,7 @@ function AppRoutes() {
                 element={
                   isProtected && !isAuth ? (
                     <ProtectedRoute>
-                      <Component />
+                      <Component {...route.props} />
                     </ProtectedRoute>
                   ) : (
                     <Component />

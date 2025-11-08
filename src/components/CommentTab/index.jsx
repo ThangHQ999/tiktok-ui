@@ -13,6 +13,7 @@ import clsx from 'clsx';
 import { useSelector } from 'react-redux';
 import socketClient from '../../utils/socketClient';
 import commentService from '../../services/comment/comment.service';
+import ProtectedButton from '../ProtectedButton';
 
 function CommentTab({ post }) {
   const postId = post.id;
@@ -170,9 +171,11 @@ function CommentTab({ post }) {
               </div>
             </div>
           ) : (
-            <div className={styles.DivLoginBar}>
-              <span className={styles.SpanLogin}>Đăng nhập</span> để bình luận
-            </div>
+            <ProtectedButton>
+              <div className={styles.DivLoginBar}>
+                <span className={styles.SpanLogin}>Đăng nhập</span> để bình luận
+              </div>
+            </ProtectedButton>
           )}
         </div>
       </section>

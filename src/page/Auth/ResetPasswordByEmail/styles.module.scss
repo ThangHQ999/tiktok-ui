@@ -2,9 +2,9 @@
   color: rgba(255, 255, 255, 0.9);
   font-weight: 600;
   font-size: 15px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   -webkit-box-pack: justify;
+  justify-content: space-between;
   margin-bottom: 10px;
 }
 .DivContainer {
@@ -61,18 +61,16 @@
 }
 .H2Title {
   color: rgba(255, 255, 255, 0.9);
-  font-weight: 600;
-  font-size: 15px;
-  display: flex;
-  -webkit-box-pack: justify;
-  justify-content: space-between;
-  margin-bottom: 5px;
-}
-.DivTextContainer {
   font-family: 'Montserrat';
+  font-size: 32px;
+  margin: 16px auto;
+  font-weight: bold;
+  text-align: center;
+  overflow-wrap: break-word;
+}
+.ALink-StyledLink {
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 600;
   font-size: 12px;
-  line-height: 15px;
-  margin: 4px 0px;
-  color: rgba(255, 255, 255, 0.5);
-  display: flex;
+  display: inline-block;
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import styles from './DirectMessages.module.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -14,7 +14,6 @@ import MediaModal from '../../components/MediaModal';
 import clsx from 'clsx';
 import EmojiPanel from '../../components/EmojiPanel';
 import useClickOutside from '../../hooks/useClickOutside';
-import { useRef } from 'react';
 import ReactionIcon from '../../components/Icon/ReactionIcon';
 import ReactionPicker from '../../components/ReactionPicker';
 import { useDispatch, useSelector } from 'react-redux';
@@ -24,117 +23,238 @@ import anyUrlToFile from '../../utils/anyUrlToFile';
 import socketClient from '../../utils/socketClient';
 import { setSelectedConversation } from '../../features/conversation/conversationSlice';
 import conversationService from '../../services/conversation/conversation.service';
-//Call API
-const mockSelectedConversation = {
-  id: 3,
-  name: 'Zhang', //logic
-  avatar:
-    'https://maunailxinh.com/wp-content/uploads/2025/05/anh-meo-ngao-cute-2.jpg',
-  username: 'zhang', //logic
-  status: 'accepted', //logic
-  requesterId: 1,
-  isGroup: false,
-  participants: [
-    {
-      id: 5,
-      name: 'Zhang',
-      username: 'zhang',
-      avatar:
-        'https://maunailxinh.com/wp-content/uploads/2025/05/anh-meo-ngao-cute-1.jpg',
-    },
-    {
-      id: 5,
-      name: 'Bảo',
-      username: 'hello',
-      avatar:
-        'https://maunailxinh.com/wp-content/uploads/2025/05/anh-meo-ngao-cute-2.jpg',
-    },
-  ],
-};
+import InfiniteScroll from 'react-infinite-scroll-component';
 
-const mockMessages = [
-  {
-    id: 4,
-    content:
-      'https://maunailxinh.com/wp-content/uploads/2025/05/anh-meo-ngao-cute-2.jpg',
-    type: 'image',
-    isOwnMessage: false,
-    author: {
-      name: 'Zhang',
-      username: 'zhang',
-      avatar:
-        'https://maunailxinh.com/wp-content/uploads/2025/05/anh-meo-ngao-cute-2.jpg',
-      createdAt: '',
-    },
-    replyTo: {
-      id: 3,
-      content: 'hí',
-      type: 'text',
-      isOwnMessage: false,
-      author: {
-        name: 'Zhang',
-        username: 'zhang',
-        avatar:
-          'https://maunailxinh.com/wp-content/uploads/2025/05/anh-meo-ngao-cute-2.jpg',
-        createdAt: '',
-      },
-    },
-    reactions: [{ emoji: '😪', quantity: 2 }],
-  },
-  {
-    id: 3,
-    content: 'hí',
-    type: 'text',
-    isOwnMessage: false,
-    author: {
-      name: 'Zhang',
-      username: 'zhang',
-      avatar:
-        'https://maunailxinh.com/wp-content/uploads/2025/05/anh-meo-ngao-cute-2.jpg',
-      createdAt: '',
-    },
-    reactions: [{ emoji: '😪', quantity: 2 }],
-  },
-  {
-    id: 2,
-    parentId: null,
-    content: 'hí',
-    type: 'text',
-    isOwnMessage: false, //logic
-    author: {
-      name: 'Zhang',
-      username: 'zhang',
-      avatar:
-        'https://maunailxinh.com/wp-content/uploads/2025/05/anh-meo-ngao-cute-2.jpg',
-      createdAt: '',
-    },
-    reactions: [],
-  },
-  {
-    id: 5,
-    content: 'Đã chấp nhận yêu cầu nhắn tin. Bạn có thể bắt đầu trò chuyện.',
-    isSystem: true,
-    type: 'notification',
-  },
-  {
-    id: 1,
-    parentId: null,
-    content: 'hí lô',
-    type: 'text',
-    isOwnMessage: false,
-    author: {
-      name: 'Zhang',
-      username: 'zhang',
-      avatar:
-        'https://maunailxinh.com/wp-content/uploads/2025/05/anh-meo-ngao-cute-2.jpg',
-      createdAt: '',
-    },
-    reactions: [],
-  },
-];
+// --- (Mock data không còn cần thiết, nhưng tôi giữ lại nếu bạn muốn tham khảo) ---
+/*
+const mockSelectedConversation = { ... };
+const mockMessages = [ ... ];
+*/
+
+// Tách hàm render item ra cho sạch
+function MessageItem({
+  mes,
+  i,
+  currentUser,
+  handleReaction,
+  setReply,
+  setViewMedia,
+  setMedia,
+}) {
+  const type = mes.type;
+  if (mes.isSystem && type === 'time') {
+    return (
+      <div key={i} className={styles.DivTimeContainer}>
+        <span tabIndex={0}>{mes.content}</span>
+      </div>
+    );
+  }
+  if (mes.isSystem && type === 'notification') {
+    return (
+      <div key={i} data-e2e="chat-item" className={styles.DivChatItemWrapper}>
+        <p className={styles.PChatTipContainer}>{mes.content}</p>
+      </div>
+    );
+  }
+
+  // Logic isOwnMessage, đảm bảo tin nhắn từ API cũng được nhận diện
+  const isOwn = mes.isOwnMessage || mes.author?.id === currentUser?.id;
+
+  return (
+    <div
+      key={mes.id || i} // Luôn ưu tiên mes.id
+      data-e2e="chat-item"
+      className={styles.DivChatItemWrapper}
+    >
+      <div
+        className={clsx(
+          styles.DivMessageVerticalContainer,
+          isOwn ? styles.MyMessage : ''
+        )}
+      >
+        {mes.replyTo && (
+          <>
+            <div className={styles.DivChatItemSenderNameContainer}>
+              Trả lời tới{' '}
+              {mes.replyTo.isOwnMessage ? 'bạn' : mes.replyTo.author.name}
+            </div>
+            <div className={styles.DivRefTextContent}>
+              <div className={styles.DivMaxTwoLine}>
+                {mes.replyTo.type === 'text'
+                  ? mes.replyTo.content
+                  : mes.replyTo.type}
+              </div>
+            </div>
+          </>
+        )}
+        <div
+          tabIndex={0}
+          data-area="Actions"
+          className={
+            styles[
+              isOwn
+                ? 'DivMyMessageHorizontalContainer'
+                : 'DivMessageHorizontalContainer'
+            ]
+          }
+        >
+          <Link
+            target="_blank"
+            rel="opener"
+            tabIndex={-1}
+            className={styles.StyledLink}
+            to={`/@${mes.author?.username}`}
+          >
+            <span
+              shape="circle"
+              data-e2e="chat-avatar"
+              className={styles.SpanAvatarContainer}
+              style={{ width: '32px', height: '32px' }}
+            >
+              {mes.author?.avatar && (
+                <img
+                  loading="lazy"
+                  alt=""
+                  src={mes.author.avatar}
+                  className={styles.ImgAvatar}
+                />
+              )}
+            </span>
+          </Link>
+          {type === 'text' && (
+            <div>
+              <div
+                className={clsx(
+                  styles.DivTextContainer,
+                  isOwn ? styles.MyTextMessage : ''
+                )}
+              >
+                <p className={styles.PText}>{mes.content}</p>
+              </div>
+            </div>
+          )}
+          {(type === 'image' || type === 'video') && (
+            <div>
+              <div className={styles.DivCommonContainer}>
+                <div className={styles.DivImageVideoMessageContainer}>
+                  <div
+                    className={styles.DivContainer}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      position: 'relative',
+                    }}
+                  >
+                    {type === 'image' ? (
+                      <img
+                        src={mes.content}
+                        alt="image message"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                        onClick={() => {
+                          setMedia(mes.content);
+                          setViewMedia(true);
+                        }}
+                      />
+                    ) : (
+                      <video
+                        src={mes.content}
+                        controls
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                        onClick={() => {
+                          setMedia(mes.content);
+                          setViewMedia(true);
+                        }}
+                      />
+                    )}
+                    <div className={styles.DivIndicatorContainer}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          <div data-e2e="dm-warning"></div>
+
+          {/* Actions */}
+          <div className={styles.DivActions}>
+            <div
+              role="button"
+              tabIndex={0}
+              data-area="More"
+              aria-expanded="false"
+              aria-haspopup="dialog"
+              className={styles.DivIconAction}
+            >
+              <FontAwesomeIcon icon={faEllipsis} />
+            </div>
+            <div className="TUXTooltip-reference">
+              <div
+                tabIndex={0}
+                role="button"
+                data-area="Reply"
+                className={styles.DivIconAction}
+                onClick={() => setReply(mes)}
+              >
+                <svg
+                  fill="currentColor"
+                  fontSize="20px"
+                  viewBox="0 0 48 48"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="1em"
+                  height="1em"
+                >
+                  <path d="m4.59 17.41 13.29 13.3a1 1 0 0 0 1.41 0l1.42-1.42a1 1 0 0 0 0-1.41L10.83 18H22.8c3.4 0 5.82 0 7.72.16 1.88.15 3.07.44 4.02.93a10 10 0 0 1 4.37 4.37c.49.95.78 2.14.93 4.02.16 1.9.16 4.33.16 7.72V43a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-7.89c0-3.28 0-5.87-.17-7.95a14.4 14.4 0 0 0-1.36-5.52 14 14 0 0 0-6.11-6.11 14.4 14.4 0 0 0-5.52-1.36C28.76 14 26.17 14 22.9 14H10.83l9.88-9.88a1 1 0 0 0 0-1.41l-1.42-1.42a1 1 0 0 0-1.41 0L4.58 14.6a2 2 0 0 0 0 2.82Z"></path>
+                </svg>
+              </div>
+            </div>
+            <div
+              tabIndex={0}
+              role="button"
+              data-area="Reaction"
+              aria-expanded="false"
+              aria-haspopup="dialog"
+              className={styles.DivIconAction}
+            >
+              <ReactionIcon />
+              <ReactionPicker
+                onClickEmoji={(emoji) => handleReaction(mes, emoji)}
+              />
+            </div>
+          </div>
+        </div>
+        {mes.reactions?.length > 0 && (
+          <div
+            tabIndex={0}
+            aria-expanded="false"
+            aria-haspopup="dialog"
+            className={styles.DivReactionContainer}
+          >
+            {mes?.reactions.map((react, i) => (
+              <span key={i} className={styles.ReactionItem}>
+                <span className={styles.SpanReactionEmoji}>{react.emoji}</span>
+                <span className={styles.SpanReactionEmoji}>
+                  {react.quantity}
+                </span>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function DirectMessages() {
   const [searchParams, setSearchParams] = useSearchParams();
+  // const chatMainRef = useRef(null); // Không cần thiết khi dùng scrollableTarget
   const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.auth.currentUser);
 
@@ -144,9 +264,9 @@ export default function DirectMessages() {
   const conversations = useSelector(
     (state) => state.conversation.conversations
   );
-  const pendingConversations = useSelector(
-    (state) => state.conversation.pendingConversations
-  );
+  // const pendingConversations = useSelector( // Biến này không được sử dụng
+  //   (state) => state.conversation.pendingConversations
+  // );
 
   const [acceptMessages, setAcceptMessages] = useState(
     selectedConversation?.status === 'accepted'
@@ -156,36 +276,125 @@ export default function DirectMessages() {
     setAcceptMessages(selectedConversation?.status === 'accepted');
   }, [selectedConversation?.status]);
 
+  // +++ LOGIC CUỘN VÔ HẠN +++
   const [messages, setMessages] = useState([]);
-  useEffect(() => {
-    console.log(messages);
-  }, [messages]);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const cursorRef = useRef(null); // Dùng ref để lưu cursor (ID tin nhắn cũ nhất)
+  const LIMIT = 15; // Tải 15 tin nhắn mỗi lần
 
+  // Hàm tải tin nhắn CŨ HƠN (khi cuộn lên)
+  const fetchOlderMessages = async () => {
+    if (isLoading || !selectedConversation?.id) return;
+
+    setIsLoading(true);
+
+    try {
+      const res = await messageService.getMessagesByConversationId(
+        selectedConversation.id,
+        cursorRef.current, // Lấy ID tin nhắn cũ nhất hiện tại
+        LIMIT
+      );
+      const olderMessages = res.data;
+
+      if (olderMessages.length > 0) {
+        // Thêm tin nhắn CŨ vào *cuối* mảng
+        // (Trong layout column-reverse, nó sẽ hiện ở *trên cùng*)
+        setMessages((prev) => [...prev, ...olderMessages]);
+        // Cập nhật cursor_ref là ID của tin nhắn cũ nhất
+        cursorRef.current = olderMessages[olderMessages.length - 1].id;
+      }
+
+      // Nếu API trả về ít hơn LIMIT, tức là đã hết
+      if (olderMessages.length < LIMIT) {
+        setHasMore(false);
+      }
+    } catch (err) {
+      console.error('Lỗi khi fetch messages:', err);
+      setHasMore(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Hàm tải tin nhắn LẦN ĐẦU (khi chọn conversation)
+  const fetchInitialMessages = async (conversationId) => {
+    setIsLoading(true);
+    setMessages([]); // Xóa tin nhắn cũ
+    setHasMore(true); // Reset
+    cursorRef.current = null; // Reset
+
+    try {
+      const res = await messageService.getMessagesByConversationId(
+        conversationId,
+        null,
+        LIMIT
+      );
+      const initialMessages = res.data || []; // Đảm bảo là mảng
+
+      // Gán isOwnMessage cho tin nhắn tải lần đầu
+      const processedMessages = initialMessages.map((mes) => ({
+        ...mes,
+        isOwnMessage: mes.author?.id === currentUser?.id,
+      }));
+      setMessages(processedMessages);
+
+      if (processedMessages.length > 0) {
+        cursorRef.current = processedMessages[processedMessages.length - 1].id;
+      }
+      if (processedMessages.length < LIMIT) {
+        setHasMore(false);
+      }
+    } catch (err) {
+      console.error('Lỗi khi fetch initial messages:', err);
+      setHasMore(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // useEffect để lấy conversation ID từ URL hoặc khi selectedConversation thay đổi
   useEffect(() => {
     const conversationId = searchParams.get('conversation');
-    if (!selectedConversation && conversationId) {
-      const fetchData = async () => {
-        const res = await conversationService.getConversationById(
-          conversationId
-        );
-        console.log(res);
-        dispatch(setSelectedConversation(res));
-      };
-      fetchData();
-    }
-  }, [dispatch, searchParams, selectedConversation]);
 
+    const loadConversation = async (id) => {
+      // Nếu conversation hiện tại không phải là conversation trong URL
+      if (selectedConversation?.id !== id) {
+        // Reset
+        setMessages([]);
+        setHasMore(true);
+        cursorRef.current = null;
+
+        // Fetch conversation mới
+        const res = await conversationService.getConversationById(id);
+        dispatch(setSelectedConversation(res));
+        // Tải tin nhắn lần đầu *ngay sau khi* có conversation
+        await fetchInitialMessages(id);
+      }
+    };
+
+    if (conversationId) {
+      loadConversation(conversationId);
+    }
+
+    // Tắt eslint warning vì fetchInitialMessages không cần là dependency
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, searchParams, currentUser?.id]); // Chỉ chạy khi URL thay đổi
+
+  // useEffect này để xử lý khi click vào 1 conversation (selectedConversation thay đổi)
   useEffect(() => {
     if (selectedConversation?.id) {
-      const fetchMessages = async () => {
-        const res = await messageService.getMessagesByConversationId(
-          selectedConversation.id
-        );
-        setMessages(res);
-      };
-      fetchMessages();
+      // Kiểm tra xem tin nhắn đã được tải cho conversation này chưa
+      // (Tránh tải lại khi `selectedConversation` được update từ socket)
+      if (
+        messages.length === 0 ||
+        messages[0]?.conversationId !== selectedConversation.id
+      ) {
+        fetchInitialMessages(selectedConversation.id);
+      }
     }
-  }, [dispatch, selectedConversation?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedConversation?.id, currentUser?.id]); // Chỉ chạy khi selectedConversation thay đổi
 
   //Emoji
   const [openEmoji, setOpenEmoji] = useState(false);
@@ -221,8 +430,9 @@ export default function DirectMessages() {
     );
   };
 
+  // +++ LOGIC SOCKET +++
   useEffect(() => {
-    if (!conversations.length) return;
+    if (!conversations.length || !currentUser?.username) return;
     const pusher = socketClient;
     const channels = [];
 
@@ -231,56 +441,28 @@ export default function DirectMessages() {
       channels.push(channel);
 
       channel.bind('new-message', async (newMessage) => {
-        console.log(newMessage);
-        if (newMessage.author.username === currentUser.username) {
-          newMessage.isOwnMessage = true;
-        } else {
-          newMessage.isOwnMessage = false;
-        }
+        const isOwn = newMessage.author.username === currentUser.username;
+        newMessage.isOwnMessage = isOwn;
 
-        // Nếu đang mở conversation và tin nhắn là của người kia → mark read
-        //  if (
-        //    selectedConversation?.id === newMessage.conversationId &&
-        //    newMessage.userId !== currentUser.id
-        //  ) {
-        //    await markAsReadOnServer(
-        //      newMessage.conversation_id,
-        //      newMessage.id,
-        //      new Date()
-        //    );
-        //    markAsRead(newMessage.conversation_id);
-        //  }
+        // Chỉ thêm vào state nếu nó là của conversation đang mở
+        if (selectedConversation?.id === conversation.id) {
+          // Thêm tin nhắn MỚI vào *đầu* mảng
+          // (Trong layout column-reverse, nó sẽ hiện ở *dưới cùng*)
 
-        // Update danh sách conversation
-        //  setConversations((prev) => {
-        //    // Cập nhật conversation
-        //    const updated = prev.map((c) => {
-        //      if (c.id !== newMessage.conversation_id) return c;
-        //      return {
-        //        ...c,
-        //        lastMessage: newMessage,
-        //        unreadCount:
-        //          selectedConversation?.id === c.id
-        //            ? 0
-        //            : (c.unreadCount || 0) + 1,
-        //      };
-        //    });
-
-        //    // Đưa conversation vừa có tin nhắn mới lên đầu
-        //    return updated.sort((a, b) => {
-        //      if (a.id === newMessage.conversation_id) return -1; // a lên trước
-        //      if (b.id === newMessage.conversation_id) return 1; // b lên trước
-        //      return 0; // giữ nguyên thứ tự cũ
-        //    });
-        //  });
-
-        // Nếu đang mở thì thêm vào messages
-        if (
-          selectedConversation?.id === conversation.id &&
-          ((newMessage.type === 'text' && newMessage.isOwnMessage) ||
-            !newMessage.isOwnMessage)
-        ) {
-          setMessages((prev) => [newMessage, ...prev]);
+          // Logic của bạn: chỉ thêm text của chính mình, hoặc mọi thứ của người khác
+          if ((newMessage.type === 'text' && isOwn) || !isOwn) {
+            setMessages((prev) => [newMessage, ...prev]);
+          } else if (newMessage.type !== 'text' && isOwn) {
+            // Xử lý media của chính mình:
+            // Tìm tin nhắn "optimistic" (có content là blob:) và thay thế nó
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.content.startsWith('blob:') && m.type === newMessage.type
+                  ? newMessage // Thay thế tin nhắn blob bằng tin nhắn thật từ server
+                  : m
+              )
+            );
+          }
         }
       });
     });
@@ -291,63 +473,7 @@ export default function DirectMessages() {
         pusher.unsubscribe(channel.name);
       });
     };
-  }, [conversations, selectedConversation?.id, currentUser?.id]);
-
-  // // Cập nhật unreadCount ở FE
-  // const markAsRead = (conversationId) => {
-  //   setConversations((prev) =>
-  //     prev.map((conv) =>
-  //       conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
-  //     )
-  //   );
-  // };
-  // // Hàm gọi API mark-as-read
-  // const doMarkAsRead = async (conversation, messages) => {
-  //   if (!conversation) return;
-  //   const lastFromOther = [...(messages || currentMessages)]
-  //     .sort((a, b) => b.id - a.id) // newest first
-  //     .find((m) => m.user_id !== cur_user.id);
-
-  //   if (lastFromOther) {
-  //     await markAsReadOnServer(conversation.id, lastFromOther.id, new Date());
-  //     markAsRead(conversation.id);
-  //   }
-  // };
-
-  // // Khi mở conversation → fetch messages + mark 1 lần
-  // useEffect(() => {
-  //   if (!selectedConversation) return;
-
-  //   const fetchMessages = async () => {
-  //     const myMessages = await messageService.getMessagesByConversationId(
-  //       selectedConversation.id
-  //     );
-  //     setCurrentMessages(myMessages);
-
-  //     // Mark khi mở lần đầu
-  //     if (!hasMarkedRead) {
-  //       await doMarkAsRead(selectedConversation, myMessages);
-  //       setHasMarkedRead(false);
-  //     }
-  //   };
-
-  //   fetchMessages();
-  //   setConversations((prev) =>
-  //     prev.map((c) =>
-  //       c.id === selectedConversation?.id ? { ...c, unreadCount: 0 } : c
-  //     )
-  //   );
-  // }, [selectedConversation?.id]);
-
-  // Khi rời conversation → mark lại nếu cần
-  // useEffect(() => {
-  //   return () => {
-  //     if (selectedConversation && currentMessages.length) {
-  //       doMarkAsRead(selectedConversation, currentMessages);
-  //     }
-  //     setHasMarkedRead(false);
-  //   };
-  // }, [selectedConversation?.id]);
+  }, [conversations, selectedConversation?.id, currentUser?.username]);
 
   const [reply, setReply] = useState(null);
   const [viewMedia, setViewMedia] = useState(false);
@@ -356,6 +482,7 @@ export default function DirectMessages() {
   const [videosToDisplay, setVideosToDisplay] = useState([]);
   const [message, setMessage] = useState('');
   const [submitTick, setSubmitTick] = useState(0);
+
   const handleSend = async ({ text, images }) => {
     if (
       !text &&
@@ -364,29 +491,32 @@ export default function DirectMessages() {
       !images?.length
     )
       return;
+
     if (text) {
       const newMesText = {
         content: text,
         type: 'text',
         parentId: reply?.id || null,
       };
+      // Gửi API. Socket sẽ lắng nghe và tự thêm vào state.
       await messageService.createMessage(selectedConversation?.id, newMesText);
     }
 
     const allImages = [...imagesToDisplay, ...(images || [])];
     allImages.forEach(async (img) => {
-      const newMes = {
+      // Optimistic UI: Thêm tin nhắn (ảnh blob) vào state *ngay lập tức*
+      const optimisticMes = {
         id: Date.now() + Math.random(),
-        content: img,
+        content: img, // Đây là một blob: URL
         type: 'image',
-        isOwnMessage: 'me',
+        isOwnMessage: true,
         author: currentUser,
         replyTo: reply,
         createdAt: new Date(),
+        conversationId: selectedConversation.id, // Thêm để so sánh
       };
-      setMessages((prev) => [newMes, ...prev]);
+      setMessages((prev) => [optimisticMes, ...prev]);
 
-      // Đẩy ảnh lên mạng và post mess
       const file = await anyUrlToFile(
         img,
         `${currentUser.id}-${new Date().toISOString()}`
@@ -396,27 +526,29 @@ export default function DirectMessages() {
         folder: `conversation/${selectedConversation?.id}`,
       });
 
-      const data = {
+      // Gửi tin nhắn thật (ảnh cloudinary) lên server
+      // Socket sẽ nhận và thay thế tin nhắn optimistic ở trên
+      await messageService.createMessage(selectedConversation?.id, {
         parentId: reply?.id || null,
         content: url,
         type: 'image',
-      };
-      await messageService.createMessage(selectedConversation?.id, data);
+      });
     });
-    //Gửi video
+
+    // Tương tự cho video
     videosToDisplay.forEach(async (vid) => {
-      const newMes = {
+      const optimisticMes = {
         id: Date.now() + Math.random(),
-        content: vid,
+        content: vid, // Đây là một blob: URL
         type: 'video',
         isOwnMessage: true,
         author: currentUser,
         createdAt: new Date(),
         replyTo: reply,
+        conversationId: selectedConversation.id,
       };
-      setMessages((prev) => [newMes, ...prev]);
+      setMessages((prev) => [optimisticMes, ...prev]);
 
-      // Đẩy video lên mạng và post mess
       const file = await anyUrlToFile(
         vid,
         `${currentUser.id}-${new Date().toISOString()}`
@@ -425,14 +557,14 @@ export default function DirectMessages() {
         message: file,
         folder: `conversation/${selectedConversation?.id}`,
       });
-      const data = {
-        conversationId: selectedConversation?.id,
+      await messageService.createMessage(selectedConversation?.id, {
         parentId: reply?.id || null,
         content: url,
         type: 'video',
-      };
-      await messageService.createMessage(selectedConversation?.id, data);
+      });
     });
+
+    // Reset input
     setMessage('');
     setImagesToDisplay([]);
     setVideosToDisplay([]);
@@ -440,6 +572,7 @@ export default function DirectMessages() {
   };
 
   const handleTyping = (text) => setMessage(text);
+
   const handleImagePaste = (files) => {
     const newImages = files.map((file) => URL.createObjectURL(file));
     setImagesToDisplay((prev) => [...prev, ...newImages]);
@@ -448,9 +581,7 @@ export default function DirectMessages() {
   const handleMediaUpload = (e) => {
     const file = e.currentTarget.files[0];
     if (!file) return;
-
     const fileURL = URL.createObjectURL(file);
-
     if (file.type.startsWith('image/')) {
       setImagesToDisplay((prev) => [...prev, fileURL]);
     } else if (file.type.startsWith('video/')) {
@@ -458,7 +589,6 @@ export default function DirectMessages() {
     } else {
       console.warn('File không phải ảnh hoặc video');
     }
-
     e.target.value = null;
   };
 
@@ -469,6 +599,7 @@ export default function DirectMessages() {
       return prevImages.filter((_, index) => index !== indexToRemove);
     });
   };
+
   const handleRemoveVideo = (indexToRemove) => {
     setVideosToDisplay((prevVideos) => {
       const videoToRemove = prevVideos[indexToRemove];
@@ -476,6 +607,7 @@ export default function DirectMessages() {
       return prevVideos.filter((_, index) => index !== indexToRemove);
     });
   };
+
   return (
     <div id="main-content-messages" className={styles.DivFullSideNavLayout}>
       {selectedConversation ? (
@@ -530,245 +662,43 @@ export default function DirectMessages() {
             </div>
           </div>
 
-          {/* Main Chat */}
-          <div className={styles.DivChatMain}>
-            {messages.map((mes, i) => {
-              const type = mes.type;
-              if (mes.isSystem && type === 'time') {
-                return (
-                  <div key={i} className={styles.DivTimeContainer}>
-                    <span tabIndex={0}>{mes.content}</span>
-                  </div>
-                );
+          {/* Main Chat (Đã thay đổi) */}
+          <div
+            className={styles.DivChatMain}
+            id="scrollableDiv" // ID này rất quan trọng
+            style={{
+              overflow: 'auto',
+              display: 'flex',
+              flexDirection: 'column-reverse', // Chìa khóa!!
+            }}
+          >
+            <InfiniteScroll
+              dataLength={messages.length} // Số tin nhắn hiện có
+              next={fetchOlderMessages} // Hàm để tải tin nhắn cũ
+              style={{ display: 'flex', flexDirection: 'column-reverse' }} // Bắt buộc
+              inverse={true} // Bắt buộc: bật chế độ đảo ngược
+              hasMore={hasMore} // State cho biết còn tin nhắn cũ để tải không
+              loader={
+                <h4 style={{ textAlign: 'center', color: 'white' }}>
+                  Đang tải...
+                </h4>
               }
-              if (mes.isSystem && type === 'notification') {
-                return (
-                  <div
-                    key={i}
-                    data-e2e="chat-item"
-                    className={styles.DivChatItemWrapper}
-                  >
-                    <p className={styles.PChatTipContainer}>{mes.content}</p>
-                  </div>
-                );
-              }
-              return (
-                <div
-                  key={i}
-                  data-e2e="chat-item"
-                  className={styles.DivChatItemWrapper}
-                >
-                  <div
-                    className={clsx(
-                      styles.DivMessageVerticalContainer,
-                      mes.isOwnMessage ? styles.MyMessage : ''
-                    )}
-                  >
-                    {mes.replyTo && (
-                      <>
-                        <div className={styles.DivChatItemSenderNameContainer}>
-                          Trả lời tới{' '}
-                          {mes.replyTo.isOwnMessage
-                            ? 'bạn'
-                            : mes.replyTo.author.name}
-                        </div>
-                        <div className={styles.DivRefTextContent}>
-                          <div className={styles.DivMaxTwoLine}>
-                            {mes.replyTo.type === 'text'
-                              ? mes.replyTo.content
-                              : mes.replyTo.type}
-                          </div>
-                        </div>
-                      </>
-                    )}
-                    <div
-                      tabIndex={0}
-                      data-area="Actions"
-                      className={
-                        styles[
-                          mes.isOwnMessage
-                            ? 'DivMyMessageHorizontalContainer'
-                            : 'DivMessageHorizontalContainer'
-                        ]
-                      }
-                    >
-                      <Link
-                        target="_blank"
-                        rel="opener"
-                        tabIndex={-1}
-                        className={styles.StyledLink}
-                        to={`/@${mes.author?.username}`}
-                      >
-                        <span
-                          shape="circle"
-                          data-e2e="chat-avatar"
-                          className={styles.SpanAvatarContainer}
-                          style={{ width: '32px', height: '32px' }}
-                        >
-                          <img
-                            loading="lazy"
-                            alt=""
-                            src={mes.author.avatar}
-                            className={styles.ImgAvatar}
-                          />
-                        </span>
-                      </Link>
-                      {type === 'text' && (
-                        <div>
-                          <div
-                            className={clsx(
-                              styles.DivTextContainer,
-                              mes.isOwnMessage ? styles.MyTextMessage : ''
-                            )}
-                          >
-                            <p className={styles.PText}>{mes.content}</p>
-                          </div>
-                        </div>
-                      )}
-                      {type === 'image' && (
-                        <div>
-                          <div className={styles.DivCommonContainer}>
-                            <div
-                              className={styles.DivImageVideoMessageContainer}
-                            >
-                              <div
-                                className={styles.DivContainer}
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover',
-                                  position: 'relative',
-                                }}
-                              >
-                                <img
-                                  src={mes.content}
-                                  alt="image message"
-                                  style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: 'cover',
-                                  }}
-                                  onClick={() => {
-                                    setMedia(mes.content);
-                                    setViewMedia(true);
-                                  }}
-                                />
-                                <div
-                                  className={styles.DivIndicatorContainer}
-                                ></div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      {type === 'video' && (
-                        <div>
-                          <div className={styles.DivCommonContainer}>
-                            <div
-                              className={styles.DivImageVideoMessageContainer}
-                            >
-                              <div
-                                className={styles.DivContainer}
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover',
-                                  position: 'relative',
-                                }}
-                              >
-                                <video
-                                  src={mes.content}
-                                  controls
-                                  style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: 'cover',
-                                  }}
-                                  onClick={() => {
-                                    setMedia(mes.content);
-                                    setViewMedia(true);
-                                  }}
-                                />
-                                <div
-                                  className={styles.DivIndicatorContainer}
-                                ></div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      <div data-e2e="dm-warning"></div>
-
-                      {/* Actions */}
-                      <div className={styles.DivActions}>
-                        <div
-                          role="button"
-                          tabIndex={0}
-                          data-area="More"
-                          aria-expanded="false"
-                          aria-haspopup="dialog"
-                          className={styles.DivIconAction}
-                        >
-                          <FontAwesomeIcon icon={faEllipsis} />
-                        </div>
-                        <div className="TUXTooltip-reference">
-                          <div
-                            tabIndex={0}
-                            role="button"
-                            data-area="Reply"
-                            className={styles.DivIconAction}
-                            onClick={() => setReply(mes)}
-                          >
-                            <svg
-                              fill="currentColor"
-                              fontSize="20px"
-                              viewBox="0 0 48 48"
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="1em"
-                              height="1em"
-                            >
-                              <path d="m4.59 17.41 13.29 13.3a1 1 0 0 0 1.41 0l1.42-1.42a1 1 0 0 0 0-1.41L10.83 18H22.8c3.4 0 5.82 0 7.72.16 1.88.15 3.07.44 4.02.93a10 10 0 0 1 4.37 4.37c.49.95.78 2.14.93 4.02.16 1.9.16 4.33.16 7.72V43a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-7.89c0-3.28 0-5.87-.17-7.95a14.4 14.4 0 0 0-1.36-5.52 14 14 0 0 0-6.11-6.11 14.4 14.4 0 0 0-5.52-1.36C28.76 14 26.17 14 22.9 14H10.83l9.88-9.88a1 1 0 0 0 0-1.41l-1.42-1.42a1 1 0 0 0-1.41 0L4.58 14.6a2 2 0 0 0 0 2.82Z"></path>
-                            </svg>
-                          </div>
-                        </div>
-                        <div
-                          tabIndex={0}
-                          role="button"
-                          data-area="Reaction"
-                          aria-expanded="false"
-                          aria-haspopup="dialog"
-                          className={styles.DivIconAction}
-                        >
-                          <ReactionIcon />
-                          <ReactionPicker
-                            onClickEmoji={(emoji) => handleReaction(mes, emoji)}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    {mes.reactions?.length > 0 && (
-                      <div
-                        tabIndex={0}
-                        aria-expanded="false"
-                        aria-haspopup="dialog"
-                        className={styles.DivReactionContainer}
-                      >
-                        {mes?.reactions.map((react, i) => (
-                          <span key={i} className={styles.ReactionItem}>
-                            <span className={styles.SpanReactionEmoji}>
-                              {react.emoji}
-                            </span>
-                            <span className={styles.SpanReactionEmoji}>
-                              {react.quantity}
-                            </span>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+              scrollableTarget="scrollableDiv" // ID của div cha
+            >
+              {/* Render danh sách tin nhắn */}
+              {messages.map((mes, i) => (
+                <MessageItem
+                  key={mes.id || i}
+                  mes={mes}
+                  i={i}
+                  currentUser={currentUser}
+                  handleReaction={handleReaction}
+                  setReply={setReply}
+                  setViewMedia={setViewMedia}
+                  setMedia={setMedia}
+                />
+              ))}
+            </InfiniteScroll>
           </div>
 
           {/* Bottom */}

@@ -12,7 +12,7 @@ import {
 
 import Text from '../Text';
 import MorePopover from '../MorePopover/MorePopover';
-import menuItemVideo from '../../configs/menuItemVideo.jsx';
+import { getMenuItemVideo } from '../../configs/menuItemVideo.jsx';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { setMuted, setVolume } from '../../features/volume/volumeSlice';
@@ -24,6 +24,7 @@ const MainVideoCard = ({ data, onEnded = () => {} }) => {
   const autoScrollReducer = useSelector((state) => state.autoScroll);
   const autoScroll = autoScrollReducer.autoScroll;
 
+  const menuItemVideo = getMenuItemVideo();
   const [videoData, setVideoData] = useState(data);
   const [seeMore, setSeeMore] = useState(false);
   const [loading, setLoading] = useState(false);

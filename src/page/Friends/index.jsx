@@ -3,8 +3,10 @@ import UserCard from '../../components/UserCard';
 import styles from './styles.module.scss';
 import userService from '../../services/user/user.service';
 import { useSelector } from 'react-redux';
+import Home from '../Home';
 //Call API
 function Friends() {
+  const isAuth = useSelector((state) => state.auth.isAuth);
   const currentUser = useSelector((state) => state.auth.currentUser);
 
   const [users, setUsers] = useState([]);
@@ -30,6 +32,8 @@ function Friends() {
     videoRefs.current[index]?.play();
     setActiveIndex(index);
   };
+
+  if (isAuth) return <Home value="friend" />;
 
   return (
     <main className={styles.DivMainContainer}>

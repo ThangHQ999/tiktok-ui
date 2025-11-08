@@ -101,6 +101,16 @@ export const logout = async () => {
   }
 };
 
+export const resetPassword = async (data) => {
+  try {
+    const res = await httpRequest.post('/auth/reset-password', data);
+    return res;
+  } catch (err) {
+    console.error('Logout thất bại:', err);
+    throw err;
+  }
+};
+
 export default {
   getCurrentUser,
   login,
@@ -112,4 +122,5 @@ export default {
   verifyEmail,
   editProfile,
   logout,
+  resetPassword,
 };

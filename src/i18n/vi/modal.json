@@ -1,0 +1,12 @@
+{
+  "auth": {
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "logout": "Đăng xuất",
+    "cancel": "Hủy"
+  },
+  "logoutTitle": "Bạn có chắc chắn muốn đăng xuất?",
+  "tosAgreement": "Bằng việc tiếp tục với tài khoản tại <1>Việt Nam</1>, bạn đồng ý với <2>Điều khoản dịch vụ</2> và <3>Chính sách quyền riêng tư</3>.",
+  "noAccount": "Don’t have an account?",
+  "alreadyHaveAccount": "Already have an account?"
+}

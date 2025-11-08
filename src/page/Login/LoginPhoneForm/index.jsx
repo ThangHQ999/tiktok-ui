@@ -83,11 +83,19 @@ function LoginPhoneForm() {
         <div className={styles.DivLinkContainer}>
           {!IsCode ? (
             <>
-              <Link className="ALink">Bạn quên mật khẩu?</Link>
+              <Link
+                className="ALink"
+                onClick={() => dispatch(setComponent('resetPasswordByPhone'))}
+              >
+                Bạn quên mật khẩu?
+              </Link>
               <hr />
             </>
           ) : null}
-          <Link className={styles['ALink-StyledLink']} onClick={() => setIsCode(!IsCode)}>
+          <Link
+            className={styles['ALink-StyledLink']}
+            onClick={() => setIsCode(!IsCode)}
+          >
             {IsCode ? 'Đăng nhập bằng mật khẩu' : 'Đăng nhập bằng mã'}
           </Link>
         </div>

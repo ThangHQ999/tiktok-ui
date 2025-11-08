@@ -1,8 +1,10 @@
 import httpRequest from '@/utils/httpRequest';
 
-export const getMessagesByConversationId = async (slug) => {
+export const getMessagesByConversationId = async (slug, cursor, limit) => {
   try {
-    const res = await httpRequest.get(`/conversations/${slug}/messages`);
+    const res = await httpRequest.get(
+      `/conversations/${slug}/messages?cursor=${cursor}&limit=${limit}`
+    );
     return res.data;
   } catch (error) {
     console.error('Failed to fetch messages:', error);

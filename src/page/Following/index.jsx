@@ -4,8 +4,10 @@ import styles from './styles.module.scss';
 
 import userService from '../../services/user/user.service';
 import { useSelector } from 'react-redux';
+import Home from '../Home';
 
 function Following() {
+  const isAuth = useSelector((state) => state.auth.isAuth);
   const currentUser = useSelector((state) => state.auth.currentUser);
   const [users, setUsers] = useState([]);
   const fetchUsers = async () => {
@@ -31,11 +33,13 @@ function Following() {
     setActiveIndex(index);
   };
 
+  if (isAuth) return <Home value="following" />;
+
   return (
     <main className={styles.DivMainContainer}>
       <div className={styles.DivUserListWrapper}>
         {users.map((user, i) => {
-          if (currentUser.id === user.id) return null;
+          if (currentUser?.id === user.id) return null;
           return (
             <UserCard
               key={user.id}

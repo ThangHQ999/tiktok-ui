@@ -253,7 +253,7 @@ function RegisterEmailForm() {
           name="code"
           targetField="email"
           requiredFields={['day', 'month', 'year', 'email']}
-          countDown={0}
+          countDown={60}
           errors={errors}
           trigger={trigger}
           register={register}

@@ -229,7 +229,7 @@ export default function ShareModal({
                     >
                       <div className={styles.DivQuickShareUserItem}>
                         <div
-                          data-e2e="share-thanghoang9051"
+                          data-e2e="share-"
                           className={styles.DivActionContainer}
                         >
                           <div tabIndex={0} className={styles.DivAction}>
@@ -241,7 +241,7 @@ export default function ShareModal({
                                 >
                                   <img
                                     src="https://p16-common-sign-useastred.tiktokcdn-eu.com/tos-useast2a-avt-0068-giso/7132002602534830107~tplv-tiktokx-cropcenter:720:720.jpeg?dr=14579&refresh_token=d656bc50&x-expires=1756627200&x-signature=bjzEDkvIdpCs9hbccQVb64rbork%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my2"
-                                    alt="thanghoang9051"
+                                    alt=""
                                     width={64}
                                     height={64}
                                     className="TUXBaseAvatar-src"
@@ -257,9 +257,7 @@ export default function ShareModal({
                                 fontSize: '12px',
                                 letterSpacing: '0.1608px',
                               }}
-                            >
-                              thanghoang9051
-                            </p>
+                            ></p>
                           </div>
                         </div>
                       </div>

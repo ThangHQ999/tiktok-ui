@@ -218,7 +218,7 @@ function PostComment({ post }) {
 
   return (
     <div>
-      <div data-e2e="search-comment-top" className={styles.DivCommentTop}>
+      {/* <div data-e2e="search-comment-top" className={styles.DivCommentTop}>
         <span className={styles.SpanHint}>Tìm kiếm:</span>
         &nbsp;
         <span className={styles.SpanWordContainer}>
@@ -240,7 +240,7 @@ function PostComment({ post }) {
             <FontAwesomeIcon icon={faEllipsis} />
           </div>
         </div>
-      </div>
+      </div> */}
       <div style={{ marginBottom: '90px' }}>
         {comments.map((comment) => (
           <Comment

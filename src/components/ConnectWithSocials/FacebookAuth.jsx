@@ -6,8 +6,7 @@ import { FaFacebookF } from 'react-icons/fa';
 function FacebookAuth() {
   const { login } = useFacebookLogin({
     appId: import.meta.env.VITE_FACEBOOK_APP_ID,
-    redirectUri:
-      'https://tiktokk.website:3000/api/v1/auth/socials/facebook/callback',
+    redirectUri: 'http://localhost:3000/api/v1/auth/socials/facebook/callback',
     onSuccess: async ({ accessToken }) => {
       try {
         await authService.social({ code: accessToken }, 'facebook');

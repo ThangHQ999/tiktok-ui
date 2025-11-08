@@ -4,7 +4,6 @@ import { useDispatch } from 'react-redux';
 
 import styles from './style.module.scss';
 import { setComponent } from '../../../features/auth/authSlice';
-import { FaFacebookF } from 'react-icons/fa';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import GoogleAuth from '../../../components/ConnectWithSocials/GoogleAuth';
 import FacebookAuth from '../../../components/ConnectWithSocials/FacebookAuth';

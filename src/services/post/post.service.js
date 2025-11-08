@@ -37,6 +37,28 @@ export const getPosts = async (page = 1, limit = 10) => {
   }
 };
 
+export const GetFollowingPosts = async (page = 1, limit = 10) => {
+  try {
+    const res = await httpRequest.get(
+      `/posts/following?page=${page}&limit=${limit}`
+    );
+    return res.data;
+  } catch (error) {
+    console.error('Failed to fetch posts:', error);
+  }
+};
+
+export const GetFriendPosts = async (page = 1, limit = 10) => {
+  try {
+    const res = await httpRequest.get(
+      `/posts/friend?page=${page}&limit=${limit}`
+    );
+    return res.data;
+  } catch (error) {
+    console.error('Failed to fetch posts:', error);
+  }
+};
+
 export const getPost = async (slug) => {
   try {
     const res = await httpRequest.get(`/posts/${slug}`);
@@ -146,4 +168,6 @@ export default {
   getRelatedPost,
   getFeaturedPost,
   getLatestPost,
+  GetFollowingPosts,
+  GetFriendPosts,
 };

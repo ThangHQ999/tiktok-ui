@@ -1,0 +1,15 @@
+{
+  "title": "Đăng nhập vào TikTok",
+  "login": "Đăng nhập",
+  "phoneMethod": {
+    "phone": "Điện thoại",
+    "loginByEmailOrUsername": "Đăng nhập bằng email hoặc tên người dùng",
+    "loginByPassword": "Đăng nhập bằng mật khẩu",
+    "ưd": "Số điện thoại",
+    "s": "Nhập mã gồm 6 chữ số",
+    "da": "Gửi mã",
+    "a": "Email hoặc TikTok ID",
+    "aq": "Đăng nhập bằng số điện thoại",
+    "fv": "Bạn quên mật khẩu?"
+  }
+}

@@ -398,56 +398,63 @@ function Profile({ profile }) {
               </div>
               <SegmentControl />
             </div>
-            <TabPanels>
-              <TabPanel value={'videos-latest'}>
-                {posts.length > 0 ? (
+            {profile.status !== 'banned' ? (
+              <TabPanels>
+                <TabPanel value={'videos-latest'}>
+                  {posts.length > 0 ? (
+                    <VideoList variant="profile" videosData={posts} />
+                  ) : (
+                    <Error
+                      title={
+                        isSelf
+                          ? 'Tải lên video đầu tiên của bạn'
+                          : 'Không có nội dung'
+                      }
+                      desc={
+                        isSelf
+                          ? 'Video của bạn sẽ xuất hiện ở đây'
+                          : 'Người dùng này chưa đăng bất kỳ video nào.'
+                      }
+                      icon={
+                        <div className={styles.DivErrorIconWrapper}>
+                          <svg
+                            fill="currentColor"
+                            color="inherit"
+                            fontSize="44px"
+                            viewBox="0 0 48 48"
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="1em"
+                            height="1em"
+                          >
+                            <path d="M4 28a2.5 2.5 0 0 1 2.5-2.5H20a2.5 2.5 0 0 1 2.5 2.5v13.5A2.5 2.5 0 0 1 20 44H6.5A2.5 2.5 0 0 1 4 41.5V28Zm4 1.5V40h10.5V29.5H8ZM25.5 28a2.5 2.5 0 0 1 2.5-2.5h13.5A2.5 2.5 0 0 1 44 28v13.5a2.5 2.5 0 0 1-2.5 2.5H28a2.5 2.5 0 0 1-2.5-2.5V28Zm4 1.5V40H40V29.5H29.5ZM25.5 6.5A2.5 2.5 0 0 1 28 4h13.5A2.5 2.5 0 0 1 44 6.5V20a2.5 2.5 0 0 1-2.5 2.5H28a2.5 2.5 0 0 1-2.5-2.5V6.5Zm4 1.5v10.5H40V8H29.5ZM4 6.5A2.5 2.5 0 0 1 6.5 4H20a2.5 2.5 0 0 1 2.5 2.5V20a2.5 2.5 0 0 1-2.5 2.5H6.5A2.5 2.5 0 0 1 4 20V6.5ZM8 8v10.5h10.5V8H8Z"></path>
+                          </svg>
+                        </div>
+                      }
+                    />
+                  )}
+                </TabPanel>
+                <TabPanel value={'videos-popular'}>
                   <VideoList variant="profile" videosData={posts} />
-                ) : (
-                  <Error
-                    title={
-                      isSelf
-                        ? 'Tải lên video đầu tiên của bạn'
-                        : 'Không có nội dung'
-                    }
-                    desc={
-                      isSelf
-                        ? 'Video của bạn sẽ xuất hiện ở đây'
-                        : 'Người dùng này chưa đăng bất kỳ video nào.'
-                    }
-                    icon={
-                      <div className={styles.DivErrorIconWrapper}>
-                        <svg
-                          fill="currentColor"
-                          color="inherit"
-                          fontSize="44px"
-                          viewBox="0 0 48 48"
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="1em"
-                          height="1em"
-                        >
-                          <path d="M4 28a2.5 2.5 0 0 1 2.5-2.5H20a2.5 2.5 0 0 1 2.5 2.5v13.5A2.5 2.5 0 0 1 20 44H6.5A2.5 2.5 0 0 1 4 41.5V28Zm4 1.5V40h10.5V29.5H8ZM25.5 28a2.5 2.5 0 0 1 2.5-2.5h13.5A2.5 2.5 0 0 1 44 28v13.5a2.5 2.5 0 0 1-2.5 2.5H28a2.5 2.5 0 0 1-2.5-2.5V28Zm4 1.5V40H40V29.5H29.5ZM25.5 6.5A2.5 2.5 0 0 1 28 4h13.5A2.5 2.5 0 0 1 44 6.5V20a2.5 2.5 0 0 1-2.5 2.5H28a2.5 2.5 0 0 1-2.5-2.5V6.5Zm4 1.5v10.5H40V8H29.5ZM4 6.5A2.5 2.5 0 0 1 6.5 4H20a2.5 2.5 0 0 1 2.5 2.5V20a2.5 2.5 0 0 1-2.5 2.5H6.5A2.5 2.5 0 0 1 4 20V6.5ZM8 8v10.5h10.5V8H8Z"></path>
-                        </svg>
-                      </div>
-                    }
-                  />
-                )}
-              </TabPanel>
-              <TabPanel value={'videos-popular'}>
-                <VideoList variant="profile" videosData={posts} />
-              </TabPanel>
-              <TabPanel value={'videos-oldest'}>
-                <VideoList variant="profile" videosData={posts.reverse()} />
-              </TabPanel>
-              <TabPanel value={'favorite'}>
-                <VideoList variant="profile" videosData={posts} />
-              </TabPanel>
-              <TabPanel value={'repost'}>
-                <RepostPanel profile={profile} />
-              </TabPanel>
-              <TabPanel value={'liked'}>
-                <LikedPanel profile={profile} />
-              </TabPanel>
-            </TabPanels>
+                </TabPanel>
+                <TabPanel value={'videos-oldest'}>
+                  <VideoList variant="profile" videosData={posts.reverse()} />
+                </TabPanel>
+                <TabPanel value={'favorite'}>
+                  <VideoList variant="profile" videosData={posts} />
+                </TabPanel>
+                <TabPanel value={'repost'}>
+                  <RepostPanel profile={profile} />
+                </TabPanel>
+                <TabPanel value={'liked'}>
+                  <LikedPanel profile={profile} />
+                </TabPanel>
+              </TabPanels>
+            ) : (
+              <div className={styles.banned}>
+                <h1>Tài khoản bị cấm</h1>
+                <p>Tài khoản {profile.username} không còn có sẵn nữa</p>
+              </div>
+            )}
           </Tabs>
         </div>
       </div>

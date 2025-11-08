@@ -31,6 +31,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setMuted, setVolume } from '../../features/volume/volumeSlice';
 import usePauseOnTabHidden from '../../hooks/usePauseOnTabHidden';
 import useScrollVideoNavigation from '../../hooks/useScrollVideoNavigation';
+import VideoList from '../../components/VideoList';
+import CreatorVideos from './CreatorVideos';
 
 function VideoView({ postId, username }) {
   const dispatch = useDispatch();
@@ -342,13 +344,13 @@ function VideoView({ postId, username }) {
                 {searchContent}
               </h1>
               <input
-                placeholder="cận cảnh đón tổng thống mỹ"
+                placeholder=""
                 name="q"
                 type="text"
                 autoComplete="off"
                 role="combobox"
                 aria-controls=""
-                aria-label="cận cảnh đón tổng thống mỹ"
+                aria-label=""
                 aria-expanded="false"
                 aria-autocomplete="list"
                 data-e2e="search-user-input"
@@ -666,7 +668,7 @@ function VideoView({ postId, username }) {
                   {currentPost && <PostComment post={currentPost} />}
                 </TabPanel>
                 <TabPanel value={'creatorVideos'}>
-                  {/* <VideoSimpleList /> */}
+                  {/* <CreatorVideos username={username} /> */}
                 </TabPanel>
               </TabPanels>
             </Tabs>

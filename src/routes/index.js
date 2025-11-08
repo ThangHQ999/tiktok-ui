@@ -18,6 +18,7 @@ const routes = [
   {
     path: config.routes.home,
     component: Home,
+    props: { value: 'default' },
   },
   {
     path: config.routes.explore,
