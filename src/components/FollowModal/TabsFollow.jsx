@@ -8,7 +8,6 @@ import { Tab, TabList, TabPanel, TabPanels, useTabs } from '../Tabs/Tabs';
 import { useSelector } from 'react-redux';
 
 function TabsFollow({ profile }) {
-  console.log(profile);
   const currentUser = useSelector((state) => state.auth.currentUser);
 
   const [data, setData] = useState(null);
@@ -41,6 +40,8 @@ function TabsFollow({ profile }) {
     };
     fetchData();
   }, [activeValue, profile.id]);
+
+  if (!profile) return null;
 
   return (
     <>

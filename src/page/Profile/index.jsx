@@ -6,7 +6,6 @@ import {
   faEllipsis,
   faFire,
   faGear,
-  faLock,
   faPenToSquare,
   faShare,
   faUser,

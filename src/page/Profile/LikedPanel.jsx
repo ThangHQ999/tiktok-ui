@@ -9,17 +9,20 @@ function LikedPanel({ isLocked = false, profile }) {
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
-    if (profile.id) {
-      const fetchPosts = async () => {
-        const res = await likeService.getLikedUserId({
-          likeAbleId: profile.id,
-          type: 'post',
-        });
-        setPosts(res.posts);
-      };
-      fetchPosts();
-    }
-  }, [profile?.id]);
+    if (!profile || !profile.id) return;
+
+    const fetchPosts = async () => {
+      const res = await likeService.getLikedUserId({
+        likeAbleId: profile.id,
+        type: 'post',
+      });
+      setPosts(res.posts || []);
+    };
+
+    fetchPosts();
+  }, [profile]);
+
+  if (!profile) return null;
 
   return (
     <>

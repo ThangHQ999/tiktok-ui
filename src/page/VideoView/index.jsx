@@ -651,7 +651,9 @@ function VideoView({ postId, username }) {
                   <div className={styles.DivTabMenuContainer}>
                     <Tab value={'comments'}>
                       <div className={styles.DivTabItemContainer}>
-                        <div className={styles.DivTabItem}>Comments (173)</div>
+                        <div className={styles.DivTabItem}>
+                          Comments ({currentPost.commentCount})
+                        </div>
                       </div>
                     </Tab>
                     <Tab value={'creatorVideos'}>
