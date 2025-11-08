@@ -15,7 +15,7 @@ function LoginOptionContainer() {
       <h2 className="H2Title">Đăng nhập vào TikTok</h2>
       <div className="DivLoginOptionContainer">
         <div>
-          <div>
+          {/* <div>
             <div className="LasTLoginMethodContainer"></div>
             <div
               className="DivBoxContainer"
@@ -28,7 +28,7 @@ function LoginOptionContainer() {
                 <div style={{ fontSize: '11px' }}>Sử dụng mã QR</div>
               </div>
             </div>
-          </div>
+          </div> */}
           <div onClick={() => dispatch(setComponent('phoneLogin'))}>
             <div className={styles.LasTLoginMethodContainer}></div>
             <div className="DivBoxContainer">
@@ -42,7 +42,7 @@ function LoginOptionContainer() {
               </div>
             </div>
           </div>
-          <FacebookAuth />
+          {/* <FacebookAuth /> */}
           <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_APP_ID}>
             <GoogleAuth />
           </GoogleOAuthProvider>
